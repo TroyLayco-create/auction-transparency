@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Result Transparency Card</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151e2e;
+            --accent-gold: #f59e0b;
+            --accent-blue: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #27354a;
+            --winner-glow: rgba(245, 158, 11, 0.25);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 26px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-title h1 {
+            font-size: 1.6rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-title p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .post-btn {
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+        .post-btn:hover { background: #1d4ed8; }
+
+        /* Top Showcase Section: Front/Back Cards + Winner Box */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+            align-items: stretch;
+        }
+        @media (max-width: 920px) {
+            .showcase-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Dual Card Showcase */
+        .cards-wrapper {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .photo-card {
+            width: 235px;
+            height: 330px;
+            border: 2px dashed #3b4d66;
+            border-radius: 14px;
+            background: rgba(11, 15, 25, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 8px;
+            transition: all 0.25s ease;
+        }
+        .photo-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+        }
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            display: none;
+        }
+        .card-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(11, 15, 25, 0.85);
+            border: 1px solid var(--border-color);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+        .upload-hint {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            pointer-events: none;
+        }
+        .upload-hint .icon {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .upload-hint strong {
+            color: var(--accent-gold);
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        /* Winner Highlight Card */
+        .winner-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 2px solid var(--accent-gold);
+            border-radius: 14px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 0 30px var(--winner-glow);
+        }
+        .winner-tag {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-gold);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .winner-name {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 8px 0;
+            word-break: break-word;
+        }
+        .bid-display {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin: 14px 0;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            width: fit-content;
+        }
+        .bid-label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        .bid-amount {
+            font-size: 2.3rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+        }
+        .winner-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: 12px;
+        }
+        .winner-meta span strong { color: var(--text-main); }
+
+        /* Table Styles */
+        .table-section h2 {
+            font-size: 1.15rem;
+            margin-bottom: 14px;
+            color: var(--text-main);
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+        th {
+            background: #0b0f19;
+            color: var(--text-muted);
+            padding: 12px 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+        .winner-row { background: rgba(245, 158, 11, 0.08) !important; }
+        .bid-value {
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-size: 0.95rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .winner-badge { background: var(--accent-gold); color: #000000; }
+        .outbid-badge { background: #27354a; color: #cbd5e1; }
+        .edited-badge { background: #ef4444; color: #ffffff; }
+        .text-muted { color: #64748b; }
+        .user-link {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .user-link:hover { text-decoration: underline; }
+        .verify-link {
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .verify-link:hover { text-decoration: underline; }
+        code {
+            background: #0b0f19;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #f1f5f9;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 26px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="capture-card">
+    <div class="header">
+        <div class="header-title">
+            <h1>🏆 Auction Transparency Dashboard</h1>
+            <p>Official tabulated bidding report and audit trail</p>
+        </div>
+        <a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/" target="_blank" class="post-btn">🔗 View FB Post</a>
+    </div>
+
+    <!-- Dual Photo (Front & Back) + Winner Showcase -->
+    <div class="showcase-grid">
+        <div class="cards-wrapper">
+            <!-- Front Card Slot -->
+            <div class="photo-card" onclick="document.getElementById('frontInput').click()" title="Click to upload Front photo">
+                <span class="card-tag">Front (Art)</span>
+                <input type="file" id="frontInput" accept="image/*" style="display:none" onchange="previewCard(event, 'frontImg', 'frontText')">
+                <img id="frontImg" src="" alt="Card Front">
+                <div id="frontText" class="upload-hint">
+                    <span class="icon">🎴</span>
+                    <strong>Card Front</strong>
+                    <span>Click to upload art</span>
+                </div>
+            </div>
+
+            <!-- Back Card Slot -->
+            <div class="photo-card" onclick="document.getElementById('backInput').click()" title="Click to upload Back photo">
+                <span class="card-tag">Back (Condition)</span>
+                <input type="file" id="backInput" accept="image/*" style="display:none" onchange="previewCard(event, 'backImg', 'backText')">
+                <img id="backImg" src="" alt="Card Back">
+                <div id="backText" class="upload-hint">
+                    <span class="icon">🔄</span>
+                    <strong>Card Back</strong>
+                    <span>Click to upload back</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Winner Card -->
+        <div class="winner-card">
+            <div>
+                <div class="winner-tag">🏆 OFFICIAL WINNING BIDDER</div>
+                <div class="winner-name">Marc Erwin King</div>
+                <div class="bid-display">
+                    <span class="bid-label">Winning Bid:</span>
+                    <span class="bid-amount">1250</span>
+                </div>
+            </div>
+            
+            <div class="winner-meta">
+                <span>🕒 <strong>Timestamp:</strong> 6/12/2026, 9:22:41 PM</span>
+                <span>✏️ <strong>Edited:</strong> No</span>
+                <span>💬 <strong>Comment:</strong> <code>1250</code></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="table-section">
+        <h2>📊 Complete Bidding Audit Trail</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Rank</th>
+                        <th>Bidder</th>
+                        <th>Bid Amount</th>
+                        <th>Edited?</th>
+                        <th>Raw Comment</th>
+                        <th>Comment Time</th>
+                        <th>Verification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr class="winner-row">
+            <td><span class="badge winner-badge">🏆 WINNER</span></td>
+            <td><strong>#1</strong></td>
+            <td><a href="https://www.facebook.com/marc.king.370" target="_blank" class="user-link">Marc Erwin King</a></td>
+            <td class="bid-value">1250</td>
+            <td><span class="text-muted">No</span></td>
+            <td class="comment-cell"><code>1250</code></td>
+            <td class="time-cell">6/12/2026, 9:22:41 PM</td>
+            <td><a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/?comment_id=1320407590070756" target="_blank" class="verify-link">🔎 Verify</a></td>
+        </tr>
+
+        <tr class="">
+            <td><span class="badge outbid-badge">Outbid</span></td>
+            <td><strong>#2</strong></td>
+            <td><a href="https://www.facebook.com/lau.rnce.2024" target="_blank" class="user-link">Lau Rnce</a></td>
+            <td class="bid-value">1200</td>
+            <td><span class="text-muted">No</span></td>
+            <td class="comment-cell"><code>1200</code></td>
+            <td class="time-cell">6/12/2026, 3:25:56 PM</td>
+            <td><a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/?comment_id=1320158900095625" target="_blank" class="verify-link">🔎 Verify</a></td>
+        </tr>
+
+        <tr class="">
+            <td><span class="badge outbid-badge">Outbid</span></td>
+            <td><strong>#3</strong></td>
+            <td><a href="https://www.facebook.com/marc.king.370" target="_blank" class="user-link">Marc Erwin King</a></td>
+            <td class="bid-value">1100</td>
+            <td><span class="text-muted">No</span></td>
+            <td class="comment-cell"><code>1100</code></td>
+            <td class="time-cell">6/12/2026, 2:56:29 PM</td>
+            <td><a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/?comment_id=1320140993430749" target="_blank" class="verify-link">🔎 Verify</a></td>
+        </tr>
+
+        <tr class="">
+            <td><span class="badge outbid-badge">Outbid</span></td>
+            <td><strong>#4</strong></td>
+            <td><a href="https://www.facebook.com/lau.rnce.2024" target="_blank" class="user-link">Lau Rnce</a></td>
+            <td class="bid-value">SB</td>
+            <td><span class="text-muted">No</span></td>
+            <td class="comment-cell"><code>SB</code></td>
+            <td class="time-cell">6/12/2026, 2:02:11 PM</td>
+            <td><a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/?comment_id=1320105080101007" target="_blank" class="verify-link">🔎 Verify</a></td>
+        </tr>
+
+        <tr class="">
+            <td><span class="badge outbid-badge">Outbid</span></td>
+            <td><strong>#5</strong></td>
+            <td><a href="https://www.facebook.com/johnharold.tomas" target="_blank" class="user-link">John Harold Tomas</a></td>
+            <td class="bid-value">SB</td>
+            <td><span class="text-muted">No</span></td>
+            <td class="comment-cell"><code>sb</code></td>
+            <td class="time-cell">6/12/2026, 2:04:35 PM</td>
+            <td><a href="https://www.facebook.com/groups/626936322751223/posts/1320098803434968/?comment_id=1320106593434189" target="_blank" class="verify-link">🔎 Verify</a></td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        Generated automatically for transparency and auction integrity.
+    </div>
+</div>
+
+<script>
+    function previewCard(event, imgId, textId) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                const placeholder = document.getElementById(textId);
+                img.src = e.target.result;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+</body>
+</html>

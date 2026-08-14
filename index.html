@@ -3,36 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auction Transparency Portal</title>
+    <title>StrawHatDraws - Auction Transparency Portal</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f8fafc; display: flex; justify-content: center; padding: 40px 20px; }
-        .box { width: 100%; max-width: 650px; background: #151e2e; padding: 28px; border-radius: 16px; border: 1px solid #27354a; }
-        h1 { font-size: 1.5rem; margin-bottom: 8px; color: #f59e0b; }
-        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; }
-        .list { display: flex; flex-direction: column; gap: 12px; }
-        .card-link { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 14px 18px; border-radius: 10px; text-decoration: none; color: #f8fafc; border: 1px solid #334155; transition: 0.2s ease; }
-        .card-link:hover { border-color: #f59e0b; transform: translateX(4px); }
-        .winner { font-size: 0.82rem; color: #38bdf8; }
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151e2e;
+            --accent-gold: #f59e0b;
+            --accent-blue: #38bdf8;
+            --accent-red: #e11d48;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #27354a;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        .box {
+            width: 100%;
+            max-width: 860px;
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+        /* Official SHD Brand Banner */
+        .brand-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.85);
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .shd-badge {
+            background: #dc2626;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 0.95rem;
+            padding: 4px 10px;
+            border-radius: 7px;
+            letter-spacing: 0.5px;
+        }
+        .brand-text-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .brand-tag {
+            border: 1px solid #dc2626;
+            color: #f87171;
+            font-size: 0.68rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .visit-store-btn {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+            transition: 0.2s ease;
+        }
+        .visit-store-btn:hover {
+            background: #ef4444;
+            transform: translateY(-1px);
+        }
+        .header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.55rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+        /* Search Bar */
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            background: #0b0f19;
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.2s border-color ease;
+        }
+        .search-input:focus {
+            border-color: var(--accent-gold);
+        }
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .card-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            gap: 16px;
+        }
+        .card-link:hover {
+            border-color: var(--accent-gold);
+            transform: translateX(4px);
+            background: #243247;
+        }
+        .item-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        .item-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .winner-pill {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .winner-label {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+        .winner-bid {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+        .status-msg {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .footer a {
+            color: #f87171;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="box">
-        <h1>🏆 Auction Transparency Portal</h1>
-        <p>Select an auction item below to view full bidding audit trails, timestamps, and proof.</p>
-        <div class="list">
-            <a href="item1.html" class="card-link">
-                <strong>Item 1: One Piece TCG - Kamusari OP13</strong>
-                <span class="winner">Winner: Marc Erwin King (₱1,250)</span>
+        <!-- Store Banner -->
+        <div class="brand-banner">
+            <a href="https://strawhatdraws.com/" target="_blank" class="brand-left">
+                <span class="shd-badge">SHD</span>
+                <div class="brand-text-group">
+                    <span class="brand-title">StrawHatDraws</span>
+                    <span class="brand-tag">TCG SALES</span>
+                </div>
             </a>
-            <a href="item2.html" class="card-link">
-                <strong>Item 2: Auction Post #1320098796</strong>
-                <span class="winner">Winner: Jim Moreno (₱150)</span>
-            </a>
-            <a href="item3.html" class="card-link">
-                <strong>Item 3: Auction Post #1320098886</strong>
-                <span class="winner">Winner: Leandro Relox (₱420)</span>
+            <a href="https://strawhatdraws.com/" target="_blank" class="visit-store-btn">
+                🛍️ Visit Store (Buy Now & Auctions) ↗
             </a>
         </div>
+
+        <div class="header">
+            <h1>🏆 Auction Transparency Portal</h1>
+            <p>Official tabulated bidding reports, audit trails, and proof.</p>
+        </div>
+
+        <!-- Filter Search Bar -->
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by winner name or item name..." oninput="filterList()">
+        </div>
+        
+        <!-- Live Generated List -->
+        <div class="list" id="auctionList">
+            <div class="status-msg" id="loadingMsg">⏳ Loading active auctions from repository...</div>
+        </div>
+        
+        <div class="footer">
+            Powered by <a href="https://strawhatdraws.com/" target="_blank">StrawHatDraws</a> • <span id="auctionCount">Live Transparency Hub</span>
+        </div>
     </div>
+
+    <script>
+        const GITHUB_USERNAME = "TroyLayco-create";
+        const GITHUB_REPO = "auction-transparency";
+
+        let allItems = [];
+
+        async function loadAuctions() {
+            const listEl = document.getElementById("auctionList");
+            try {
+                // 1. Fetch file list from GitHub repository
+                const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) throw new Error("Could not fetch repository contents.");
+                const files = await response.json();
+
+                // 2. Filter for transparency card HTML files
+                const cardFiles = files.filter(f => 
+                    f.name.startsWith("transparency_card_") && f.name.endsWith(".html")
+                );
+
+                if (cardFiles.length === 0) {
+                    listEl.innerHTML = `<div class="status-msg">No auction transparency cards found in repository.</div>`;
+                    return;
+                }
+
+                // 3. Extract winner, bid, and timestamp from each card
+                const parsePromises = cardFiles.map(async (file, index) => {
+                    try {
+                        const fileRes = await fetch(file.name);
+                        const htmlText = await fileRes.text();
+                        const doc = new DOMParser().parseFromString(htmlText, "text/html");
+
+                        const winner = doc.querySelector(".winner-name")?.textContent.trim() || "Unknown Winner";
+                        const bid = doc.querySelector(".bid-amount")?.textContent.trim() || "-";
+                        const timestamp = doc.querySelector(".time-cell")?.textContent.trim() || "";
+                        
+                        const postLink = doc.querySelector(".post-btn")?.getAttribute("href") || "";
+                        const postMatch = postLink.match(/posts\/(\d+)/);
+                        const postId = postMatch ? postMatch[1] : `Card #${index + 1}`;
+
+                        return {
+                            fileName: file.name,
+                            title: `Auction Post #${postId}`,
+                            winner: winner,
+                            bid: isNaN(bid) ? bid : `₱${Number(bid).toLocaleString()}`,
+                            time: timestamp
+                        };
+                    } catch (e) {
+                        return {
+                            fileName: file.name,
+                            title: file.name.replace("transparency_card_", "").replace(".html", ""),
+                            winner: "Completed",
+                            bid: "",
+                            time: ""
+                        };
+                    }
+                });
+
+                allItems = await Promise.all(parsePromises);
+                allItems.reverse(); // Newest first
+
+                renderList(allItems);
+                document.getElementById("auctionCount").textContent = `Total Auctions Cataloged: ${allItems.length}`;
+
+            } catch (err) {
+                console.error(err);
+                listEl.innerHTML = `<div class="status-msg" style="color: #ef4444;">⚠️ Notice: Open individual transparency card files directly if API limit is reached.</div>`;
+            }
+        }
+
+        function renderList(items) {
+            const listEl = document.getElementById("auctionList");
+            if (items.length === 0) {
+                listEl.innerHTML = `<div class="status-msg">No matching auctions found.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = items.map(item => `
+                <a href="${item.fileName}" class="card-link">
+                    <div>
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-sub">${item.time ? 'Time: ' + item.time : item.fileName}</div>
+                    </div>
+                    <div class="winner-pill">
+                        <span class="winner-label">🏆 Winner: ${item.winner}</span>
+                        <span class="winner-bid">${item.bid}</span>
+                    </div>
+                </a>
+            `).join("");
+        }
+
+        function filterList() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = allItems.filter(item => 
+                item.title.toLowerCase().includes(query) ||
+                item.winner.toLowerCase().includes(query)
+            );
+            renderList(filtered);
+        }
+
+        loadAuctions();
+    </script>
 </body>
 </html>

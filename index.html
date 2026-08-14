@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Transparency Portal</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f8fafc; display: flex; justify-content: center; padding: 40px 20px; }
+        .box { width: 100%; max-width: 650px; background: #151e2e; padding: 28px; border-radius: 16px; border: 1px solid #27354a; }
+        h1 { font-size: 1.5rem; margin-bottom: 8px; color: #f59e0b; }
+        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; }
+        .list { display: flex; flex-direction: column; gap: 12px; }
+        .card-link { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 14px 18px; border-radius: 10px; text-decoration: none; color: #f8fafc; border: 1px solid #334155; transition: 0.2s ease; }
+        .card-link:hover { border-color: #f59e0b; transform: translateX(4px); }
+        .winner { font-size: 0.82rem; color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🏆 Auction Transparency Portal</h1>
+        <p>Select an auction item below to view full bidding audit trails, timestamps, and proof.</p>
+        <div class="list">
+            <a href="item1.html" class="card-link">
+                <strong>Item 1: One Piece TCG - Kamusari OP13</strong>
+                <span class="winner">Winner: Marc Erwin King (₱1,250)</span>
+            </a>
+            <a href="item2.html" class="card-link">
+                <strong>Item 2: Auction Post #1320098796</strong>
+                <span class="winner">Winner: Jim Moreno (₱150)</span>
+            </a>
+            <a href="item3.html" class="card-link">
+                <strong>Item 3: Auction Post #1320098886</strong>
+                <span class="winner">Winner: Leandro Relox (₱420)</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

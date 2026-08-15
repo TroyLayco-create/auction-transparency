@@ -255,12 +255,19 @@
                 const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/`;
                 const response = await fetch(apiUrl);
                 
-                if (!response.ok) throw new Error("Could not fetch repository contents.");
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        throw new Error("GitHub API rate limit reached. Please wait a few minutes or reload.");
+                    }
+                    throw new Error("Could not fetch repository contents.");
+                }
                 const files = await response.json();
 
-                // 2. Filter for transparency card HTML files
+                // 2. Filter for transparency HTML files (handles both spaces and underscores)
                 const cardFiles = files.filter(f => 
-                    f.name.startsWith("transparency_card_") && f.name.endsWith(".html")
+                    f.name.toLowerCase().includes("transparency") && 
+                    f.name.endsWith(".html") && 
+                    f.name.toLowerCase() !== "index.html"
                 );
 
                 if (cardFiles.length === 0) {
@@ -271,11 +278,16 @@
                 // 3. Extract winner, bid, and timestamp from each card
                 const parsePromises = cardFiles.map(async (file, index) => {
                     try {
-                        const fileRes = await fetch(file.name);
+                        // ⚡ FIX: encodeURI handles spaces in filenames properly
+                        const fileUrl = encodeURI(file.name);
+                        const fileRes = await fetch(fileUrl);
+                        
+                        if (!fileRes.ok) throw new Error("Failed to load file");
                         const htmlText = await fileRes.text();
                         const doc = new DOMParser().parseFromString(htmlText, "text/html");
 
-                        const winner = doc.querySelector(".winner-name")?.textContent.trim() || "Unknown Winner";
+                        const winner = doc.querySelector(".winner-name")?.textContent.trim() || 
+                                       doc.querySelector("td")?.textContent.trim() || "Completed";
                         const bid = doc.querySelector(".bid-amount")?.textContent.trim() || "-";
                         const timestamp = doc.querySelector(".time-cell")?.textContent.trim() || "";
                         
@@ -284,7 +296,7 @@
                         const postId = postMatch ? postMatch[1] : `Card #${index + 1}`;
 
                         return {
-                            fileName: file.name,
+                            fileName: fileUrl,
                             title: `Auction Post #${postId}`,
                             winner: winner,
                             bid: isNaN(bid) ? bid : `₱${Number(bid).toLocaleString()}`,
@@ -292,8 +304,8 @@
                         };
                     } catch (e) {
                         return {
-                            fileName: file.name,
-                            title: file.name.replace("transparency_card_", "").replace(".html", ""),
+                            fileName: encodeURI(file.name),
+                            title: file.name.replace(/transparency[_ ]card[_ ]?/i, "").replace(".html", ""),
                             winner: "Completed",
                             bid: "",
                             time: ""
@@ -308,8 +320,8 @@
                 document.getElementById("auctionCount").textContent = `Total Auctions Cataloged: ${allItems.length}`;
 
             } catch (err) {
-                console.error(err);
-                listEl.innerHTML = `<div class="status-msg" style="color: #ef4444;">⚠️ Notice: Open individual transparency card files directly if API limit is reached.</div>`;
+                console.error("Auction Loader Error:", err);
+                listEl.innerHTML = `<div class="status-msg" style="color: #ef4444;">⚠️ ${err.message}</div>`;
             }
         }
 
@@ -321,10 +333,10 @@
             }
 
             listEl.innerHTML = items.map(item => `
-                <a href="${item.fileName}" class="card-link">
+                <a href="${item.fileName}" class="card-link" target="_blank">
                     <div>
                         <div class="item-title">${item.title}</div>
-                        <div class="item-sub">${item.time ? 'Time: ' + item.time : item.fileName}</div>
+                        <div class="item-sub">${item.time ? 'Time: ' + item.time : decodeURI(item.fileName)}</div>
                     </div>
                     <div class="winner-pill">
                         <span class="winner-label">🏆 Winner: ${item.winner}</span>

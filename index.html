@@ -243,119 +243,124 @@
     </div>
 
     <script>
-        const GITHUB_USERNAME = "TroyLayco-create";
-        const GITHUB_REPO = "auction-transparency";
+    const GITHUB_USERNAME = "TroyLayco-create";
+    const GITHUB_REPO = "auction-transparency";
 
-        let allItems = [];
+    let allItems = [];
 
-        async function loadAuctions() {
-            const listEl = document.getElementById("auctionList");
-            try {
-                // 1. Fetch file list from GitHub repository
-                const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/`;
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    if (response.status === 403) {
-                        throw new Error("GitHub API rate limit reached. Please wait a few minutes or reload.");
-                    }
-                    throw new Error("Could not fetch repository contents.");
-                }
-                const files = await response.json();
-
-                // 2. Filter for transparency HTML files (handles both spaces and underscores)
-                const cardFiles = files.filter(f => 
-                    f.name.toLowerCase().includes("transparency") && 
-                    f.name.endsWith(".html") && 
-                    f.name.toLowerCase() !== "index.html"
-                );
-
-                if (cardFiles.length === 0) {
-                    listEl.innerHTML = `<div class="status-msg">No auction transparency cards found in repository.</div>`;
-                    return;
-                }
-
-                // 3. Extract winner, bid, and timestamp from each card
-                const parsePromises = cardFiles.map(async (file, index) => {
-                    try {
-                        // ⚡ FIX: encodeURI handles spaces in filenames properly
-                        const fileUrl = encodeURI(file.name);
-                        const fileRes = await fetch(fileUrl);
-                        
-                        if (!fileRes.ok) throw new Error("Failed to load file");
-                        const htmlText = await fileRes.text();
-                        const doc = new DOMParser().parseFromString(htmlText, "text/html");
-
-                        const winner = doc.querySelector(".winner-name")?.textContent.trim() || 
-                                       doc.querySelector("td")?.textContent.trim() || "Completed";
-                        const bid = doc.querySelector(".bid-amount")?.textContent.trim() || "-";
-                        const timestamp = doc.querySelector(".time-cell")?.textContent.trim() || "";
-                        
-                        const postLink = doc.querySelector(".post-btn")?.getAttribute("href") || "";
-                        const postMatch = postLink.match(/posts\/(\d+)/);
-                        const postId = postMatch ? postMatch[1] : `Card #${index + 1}`;
-
-                        return {
-                            fileName: fileUrl,
-                            title: `Auction Post #${postId}`,
-                            winner: winner,
-                            bid: isNaN(bid) ? bid : `₱${Number(bid).toLocaleString()}`,
-                            time: timestamp
-                        };
-                    } catch (e) {
-                        return {
-                            fileName: encodeURI(file.name),
-                            title: file.name.replace(/transparency[_ ]card[_ ]?/i, "").replace(".html", ""),
-                            winner: "Completed",
-                            bid: "",
-                            time: ""
-                        };
-                    }
-                });
-
-                allItems = await Promise.all(parsePromises);
-                allItems.reverse(); // Newest first
-
-                renderList(allItems);
-                document.getElementById("auctionCount").textContent = `Total Auctions Cataloged: ${allItems.length}`;
-
-            } catch (err) {
-                console.error("Auction Loader Error:", err);
-                listEl.innerHTML = `<div class="status-msg" style="color: #ef4444;">⚠️ ${err.message}</div>`;
+    async function loadAuctions() {
+        const listEl = document.getElementById("auctionList");
+        try {
+            // 1. Fetch directory listing (takes ~300ms)
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/`;
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                if (response.status === 403) throw new Error("GitHub API rate limit reached. Please wait a moment.");
+                throw new Error("Could not fetch repository contents.");
             }
-        }
+            const files = await response.json();
 
-        function renderList(items) {
-            const listEl = document.getElementById("auctionList");
-            if (items.length === 0) {
-                listEl.innerHTML = `<div class="status-msg">No matching auctions found.</div>`;
+            // 2. Filter transparency HTML files
+            const cardFiles = files.filter(f => 
+                f.name.toLowerCase().includes("transparency") && 
+                f.name.endsWith(".html") && 
+                f.name.toLowerCase() !== "index.html"
+            );
+
+            if (cardFiles.length === 0) {
+                listEl.innerHTML = `<div class="status-msg">No auction transparency cards found in repository.</div>`;
                 return;
             }
 
-            listEl.innerHTML = items.map(item => `
-                <a href="${item.fileName}" class="card-link" target="_blank">
-                    <div>
-                        <div class="item-title">${item.title}</div>
-                        <div class="item-sub">${item.time ? 'Time: ' + item.time : decodeURI(item.fileName)}</div>
-                    </div>
-                    <div class="winner-pill">
-                        <span class="winner-label">🏆 Winner: ${item.winner}</span>
-                        <span class="winner-bid">${item.bid}</span>
-                    </div>
-                </a>
-            `).join("");
+            // 3. Render skeleton cards INSTANTLY (0 delay)
+            allItems = cardFiles.map((file, index) => {
+                const cleanName = file.name.replace(/transparency[_ ]card[_ ]?/i, "").replace(".html", "");
+                const postMatch = file.name.match(/(\d{10,})/);
+                const postId = postMatch ? postMatch[1] : `Card #${index + 1}`;
+
+                return {
+                    id: index,
+                    fileName: encodeURI(file.name),
+                    title: `Auction Post #${postId}`,
+                    winner: "⏳ Loading...",
+                    bid: "...",
+                    time: cleanName
+                };
+            }).reverse();
+
+            renderList(allItems);
+            document.getElementById("auctionCount").textContent = `Total Auctions Cataloged: ${allItems.length}`;
+
+            // 4. Fetch details in parallel in the background (Updates UI as each finishes)
+            allItems.forEach(async (item) => {
+                try {
+                    const fileRes = await fetch(item.fileName);
+                    if (!fileRes.ok) return;
+
+                    const htmlText = await fileRes.text();
+                    const doc = new DOMParser().parseFromString(htmlText, "text/html");
+
+                    const winner = doc.querySelector(".winner-name")?.textContent.trim() || 
+                                   doc.querySelector("td")?.textContent.trim() || "Completed";
+                    const bid = doc.querySelector(".bid-amount")?.textContent.trim() || "-";
+                    const timestamp = doc.querySelector(".time-cell")?.textContent.trim() || "";
+
+                    item.winner = winner;
+                    item.bid = isNaN(bid) ? bid : `₱${Number(bid).toLocaleString()}`;
+                    if (timestamp) item.time = `Time: ${timestamp}`;
+
+                    // Fast DOM update for this specific card
+                    const winnerEl = document.getElementById(`winner-${item.id}`);
+                    const bidEl = document.getElementById(`bid-${item.id}`);
+                    const timeEl = document.getElementById(`time-${item.id}`);
+
+                    if (winnerEl) winnerEl.textContent = `🏆 Winner: ${item.winner}`;
+                    if (bidEl) bidEl.textContent = item.bid;
+                    if (timeEl) timeEl.textContent = item.time;
+                } catch (e) {
+                    const winnerEl = document.getElementById(`winner-${item.id}`);
+                    if (winnerEl) winnerEl.textContent = "🏆 Winner: Completed";
+                }
+            });
+
+        } catch (err) {
+            console.error("Auction Loader Error:", err);
+            listEl.innerHTML = `<div class="status-msg" style="color: #ef4444;">⚠️ ${err.message}</div>`;
+        }
+    }
+
+    function renderList(items) {
+        const listEl = document.getElementById("auctionList");
+        if (items.length === 0) {
+            listEl.innerHTML = `<div class="status-msg">No matching auctions found.</div>`;
+            return;
         }
 
-        function filterList() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = allItems.filter(item => 
-                item.title.toLowerCase().includes(query) ||
-                item.winner.toLowerCase().includes(query)
-            );
-            renderList(filtered);
-        }
+        listEl.innerHTML = items.map(item => `
+            <a href="${item.fileName}" class="card-link" target="_blank">
+                <div>
+                    <div class="item-title">${item.title}</div>
+                    <div class="item-sub" id="time-${item.id}">${item.time}</div>
+                </div>
+                <div class="winner-pill">
+                    <span class="winner-label" id="winner-${item.id}">🏆 Winner: ${item.winner}</span>
+                    <span class="winner-bid" id="bid-${item.id}">${item.bid}</span>
+                </div>
+            </a>
+        `).join("");
+    }
 
-        loadAuctions();
-    </script>
+    function filterList() {
+        const query = document.getElementById("searchInput").value.toLowerCase();
+        const filtered = allItems.filter(item => 
+            item.title.toLowerCase().includes(query) ||
+            item.winner.toLowerCase().includes(query)
+        );
+        renderList(filtered);
+    }
+
+    loadAuctions();
+</script>
 </body>
 </html>

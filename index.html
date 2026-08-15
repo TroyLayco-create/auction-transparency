@@ -204,6 +204,59 @@
         .footer a:hover {
             text-decoration: underline;
         }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 📱 Mobile Responsive Optimization */
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 8px;
+            }
+            .box {
+                padding: 16px 12px;
+                border-radius: 14px;
+            }
+            .brand-banner {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .brand-left {
+                justify-content: center;
+            }
+            .visit-store-btn {
+                text-align: center;
+            }
+            .card-link {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px 14px;
+            }
+            .item-title {
+                font-size: 0.95rem;
+                word-break: break-word;
+            }
+            .item-sub {
+                font-size: 0.75rem;
+                word-break: break-all;
+            }
+            .winner-pill {
+                text-align: left;
+                width: 100%;
+                border-top: 1px solid var(--border-color);
+                padding-top: 8px;
+                margin-top: 2px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .winner-bid {
+                font-size: 1.05rem;
+            }
+        }
     </style>
 </head>
 <body>
